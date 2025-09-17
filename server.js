@@ -6,14 +6,26 @@ const bodyParser=require('body-parser')
 const cookieParser=require('cookie-parser')
 /* Database connection */ 
 const  setConnection  = require('./config/db')
+/* Routes */ 
+const authRouter = require('./routes/authRoutes')
 setConnection()
 
 const app = express()
 /* MiddleWare */
-app.use(cors())
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173"
+];
+app.use(cors({
+    origin:allowedOrigins,
+    credentials:true
+}))
 app.use(express.json())
 app.use(bodyParser.urlencoded())
 app.use(cookieParser())
+/* Routers */
+app.use("/api/auth",authRouter)
 
 /* Running Server */
 const port=process.env.PORT || 5000
