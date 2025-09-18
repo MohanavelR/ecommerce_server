@@ -3,8 +3,8 @@ const CategoryModel = require("../models/categoryModel");
 // Create category
 exports.createCategory = async (req, res) => {
   try {
-    const { categotyName, subcategories } = req.body;
-    const category = new CategoryModel({ categotyName, subcategories });
+    const { categoryName, subcategories } = req.body;
+    const category = new CategoryModel({ categoryName, subcategories });
     const savedCategory = await category.save();
     res.status(201).json({
       message: "Category created successfully",
@@ -66,10 +66,12 @@ exports.getCategoryBySubcategory = async (req, res) => {
 
 exports.getSubcategoryByCategory = async (req, res) => {
   try {
-    const {categotyName} = req.params;
-    const category = await CategoryModel.findOne({categotyName});
+    const {categoryName} = req.params;
+   
+    const category = await CategoryModel.findOne({categoryName});
+    console.log(categoryName,category)
     if (!category) {
-      return res.status(404).json({
+      return res.json({
         message: "Category not found",
         success: false,
         data: null
@@ -81,8 +83,11 @@ exports.getSubcategoryByCategory = async (req, res) => {
       data: category
     });
   } catch (error) {
+    console.log(error)
     res.status(500).json({
+      
       message: error.message,
+
       success: false,
       data: null
     });

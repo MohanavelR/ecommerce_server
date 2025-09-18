@@ -11,7 +11,7 @@ const productSchema = new mongoose.Schema({
     currency: { type: String, default: "₹" }
   },
   category: { 
-    type: mongoose.Schema.Types.ObjectId, 
+    type: String, 
     ref: "Category", 
     required: true 
   }, // Reference to Category
