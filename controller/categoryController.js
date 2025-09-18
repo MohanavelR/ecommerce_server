@@ -1,4 +1,4 @@
-const CategoryModel = require("../models/Category");
+const CategoryModel = require("../models/categoryModel");
 
 // Create category
 exports.createCategory = async (req, res) => {
@@ -64,6 +64,30 @@ exports.getCategoryBySubcategory = async (req, res) => {
   }
 };
 
+exports.getSubcategoryByCategory = async (req, res) => {
+  try {
+    const {categotyName} = req.params;
+    const category = await CategoryModel.findOne({categotyName});
+    if (!category) {
+      return res.status(404).json({
+        message: "Category not found",
+        success: false,
+        data: null
+      });
+    }
+    res.status(200).json({
+      message: "Category fetched successfully",
+      success: true,
+      data: category
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      success: false,
+      data: null
+    });
+  }
+};
 // Update category
 exports.updateCategory = async (req, res) => {
   try {

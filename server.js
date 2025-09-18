@@ -8,6 +8,8 @@ const cookieParser=require('cookie-parser')
 const  setConnection  = require('./config/db')
 /* Routes */ 
 const authRouter = require('./routes/authRoutes')
+const categoryRouter = require('./routes/categoryRoutes')
+const productRouter = require('./routes/productRoutes')
 setConnection()
 
 const app = express()
@@ -26,6 +28,8 @@ app.use(bodyParser.urlencoded())
 app.use(cookieParser())
 /* Routers */
 app.use("/api/auth",authRouter)
+app.use("/api/category",categoryRouter)
+app.use("/api/products",productRouter)
 
 /* Running Server */
 const port=process.env.PORT || 5000

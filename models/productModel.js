@@ -1,4 +1,4 @@
-import generateSKU from '../utils/generateSKU';
+const generateSKU= require('../utils/generateSKU');
 
 const mongoose=require('mongoose')
 
@@ -36,11 +36,11 @@ const productSchema = new mongoose.Schema({
 
 productSchema.pre("validate", function(next) {
   if (!this.sku) {
-    generateSKU(this.category,this.subCategory,this.productName)
+    this.sku=generateSKU(this.category,this.subCategory,this.productName)
   }
   next();
 });
 
 const Product = mongoose.model("Product", productSchema);
 
-export default Product;
+module.exports= Product;
