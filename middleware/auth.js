@@ -4,7 +4,6 @@ const authModel = require('../models/authModel');
 
 const authMiddleware = async(req,res,next)=>{
   const { token } = req.cookies;
-  console.log(token)
   if (!token){
     return res.json({
         success:false,
