@@ -10,6 +10,7 @@ const  setConnection  = require('./config/db')
 const authRouter = require('./routes/authRoutes')
 const categoryRouter = require('./routes/categoryRoutes')
 const productRouter = require('./routes/productRoutes')
+const imageUploaderRouter = require('./routes/imageUploadRoutes')
 setConnection()
 
 const app = express()
@@ -30,6 +31,7 @@ app.use(cookieParser())
 app.use("/api/auth",authRouter)
 app.use("/api/category",categoryRouter)
 app.use("/api/products",productRouter)
+app.use("/api",imageUploaderRouter)
 
 /* Running Server */
 const port=process.env.PORT || 5000
