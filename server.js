@@ -11,6 +11,10 @@ const authRouter = require('./routes/authRoutes')
 const categoryRouter = require('./routes/categoryRoutes')
 const productRouter = require('./routes/productRoutes')
 const imageUploaderRouter = require('./routes/imageUploadRoutes')
+const userRouter=require("./routes/admin/userRoutes")
+const adBannerRouter=require("./routes/admin/adBannerRoutes")
+const csRouter=require("./routes/admin/csRoutes")
+const sliderRouter=require("./routes/admin/sliderRoutes")
 setConnection()
 
 const app = express()
@@ -27,12 +31,16 @@ app.use(cors({
 app.use(express.json())
 app.use(bodyParser.urlencoded())
 app.use(cookieParser())
+app.use(express.urlencoded({ extended: true }));  
 /* Routers */
 app.use("/api/auth",authRouter)
 app.use("/api/category",categoryRouter)
 app.use("/api/products",productRouter)
 app.use("/api",imageUploaderRouter)
-
+app.use("/api/adbanner",adBannerRouter)
+app.use("/api/comingsoon",csRouter)
+app.use("/api/sliders",sliderRouter)
+app.use("/api/users",userRouter)
 /* Running Server */
 const port=process.env.PORT || 5000
 app.listen(port,()=>{

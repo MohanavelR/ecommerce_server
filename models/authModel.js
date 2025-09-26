@@ -30,6 +30,10 @@ const authSchema = new mongoose.Schema({
     resetPasswordExpire: Date,
     verificationToken: String,
     verificationExpire: Date,
+    isActive:{
+        default:true,
+        type:Boolean,
+    }
 
 },{timestamps:true})
 

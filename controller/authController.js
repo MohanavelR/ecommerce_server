@@ -38,7 +38,7 @@ const createUser = async (req, res, next) => {
   }
 };
 const login = async (req, res, next) => {
-  console.log("idsoufsif");
+
   try {
     const { email, password } = req.body;
     const user = await authModel.findOne({ email }).select("+password");
@@ -51,7 +51,7 @@ const login = async (req, res, next) => {
     }
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         message: "Invalid password. Please try again",
       });

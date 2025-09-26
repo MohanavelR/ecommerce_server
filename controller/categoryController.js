@@ -2,6 +2,7 @@ const CategoryModel = require("../models/categoryModel");
 
 // Create category
 exports.createCategory = async (req, res) => {
+     console.log("Body:",req.body)
   try {
     const { categoryName, subcategories } = req.body;
     const category = new CategoryModel({ categoryName, subcategories });
@@ -12,7 +13,8 @@ exports.createCategory = async (req, res) => {
       data: savedCategory
     });
   } catch (error) {
-    res.status(400).json({
+    console.log(error)
+    res.json({
       message: error.message,
       success: false,
       data: null
@@ -27,7 +29,8 @@ exports.getAllCategories = async (req, res) => {
     res.status(200).json({
       message: "Categories fetched successfully",
       success: true,
-      data: categories
+      data: categories,
+      count:categories.length
     });
   } catch (error) {
     res.status(500).json({
@@ -95,9 +98,11 @@ exports.getSubcategoryByCategory = async (req, res) => {
 };
 // Update category
 exports.updateCategory = async (req, res) => {
+
   try {
     const { id } = req.params;
-    const { categotyName, subcategories } = req.body;
+    const { categoryName, subcategories } = req.body;
+   
     const category = await CategoryModel.findById(id);
     if (!category) {
       return res.status(404).json({
@@ -107,7 +112,7 @@ exports.updateCategory = async (req, res) => {
       });
     }
 
-    category.categotyName = categotyName || category.categotyName;
+    category.categoryName = categoryName || category.categoryName;
     category.subcategories = subcategories || category.subcategories;
     const updatedCategory = await category.save();
 
@@ -117,7 +122,7 @@ exports.updateCategory = async (req, res) => {
       data: updatedCategory
     });
   } catch (error) {
-    res.status(400).json({
+    res.json({
       message: error.message,
       success: false,
       data: null

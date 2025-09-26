@@ -59,7 +59,8 @@ exports.getAllProducts = async (req, res) => {
     res.status(200).json({
       message: "Products fetched successfully",
       success: true,
-      data: products
+      data: products,
+      count:products.length
     });
   } catch (error) {
     console.log(error)
