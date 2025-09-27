@@ -1,6 +1,7 @@
 const transporter = require("../config/emailSender");
 const authModel = require("../models/authModel");
 const { generateOtp } = require("../utils/generateOtp");
+
 const sendOtpforVerification = async (req, res, next) => {
   const { email } = req.body;
   try {
@@ -8,7 +9,8 @@ const sendOtpforVerification = async (req, res, next) => {
     if (!user) {
       return res.json({
         success: false,
-        message: "Email is not registered",
+        // Improved Message
+        message: "Email is not registered. Please sign up to create an account.",
       });
     }
     const otp = String(generateOtp());
@@ -24,7 +26,8 @@ const sendOtpforVerification = async (req, res, next) => {
     await transporter.sendMail(message);
     res.json({
       success: true,
-      message: "Reset password OTP sent on Your Email",
+      // Improved Message
+      message: "A verification OTP has been successfully sent to your email.",
     });
   } catch (error) {
     console.log(error);
@@ -34,33 +37,38 @@ const sendOtpforVerification = async (req, res, next) => {
     });
   }
 };
-const verifyAccount= async (req, res, next) => {
+
+const verifyAccount = async (req, res, next) => {
   const { email, otp } = req.body;
   try {
     const user = await authModel.findOne({ email });
     if (!user) {
       return res.json({
         is_success: false,
-        message: "user not found",
+        // Improved Message
+        message: "User account not found for verification.",
       });
     }
     if (user.verificationToken === "") {
       return res.json({
         success: false,
-        message: "OTP is Invaild",
+        // Improved Message
+        message: "OTP is invalid or has already been used. Please request a new code.",
       });
     }
     
     if (user.verificationExpire < Date.now()) {
       return res.json({
         success: false,
-        message: "OTP is Expired",
+        // Improved Message
+        message: "The OTP has expired. Please request a new verification code.",
       });
     }
     if (user.verificationToken !== otp) {
       return res.json({
         success: false,
-        message: "OTP is Incorrect",
+        // Improved Message
+        message: "The verification OTP is incorrect. Please check the code and try again.",
       });
     }
      user.isVerified=true
@@ -68,7 +76,8 @@ const verifyAccount= async (req, res, next) => {
     user.verificationExpire = "";
     await user.save();
     res.json({
-      message: "Successfully verify Your Account",
+      // Improved Message
+      message: "Account successfully verified!",
       success: true,
     });
   } catch (error) {
@@ -80,6 +89,7 @@ const verifyAccount= async (req, res, next) => {
   }
 };
 
-module.exports={
-    sendOtpforVerification,verifyAccount
-}
+module.exports = {
+    sendOtpforVerification,
+    verifyAccount
+};

@@ -4,9 +4,16 @@ const ComingSoonProduct = require("../../models/comingsoonModel");
 exports.createCSProduct = async (req, res) => {
   try {
     const product = await ComingSoonProduct.create(req.body);
-    res.status(201).json({ success: true, data: product,message:"Successfully created Poster" });
+    res.json({ 
+        success: true, 
+        data: product,
+        message: "Coming Soon Product successfully created." 
+    });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    res.json({ 
+        success: false, 
+        message: "Failed to create Coming Soon Product: " + error.message
+    });
   }
 };
 
@@ -14,9 +21,17 @@ exports.createCSProduct = async (req, res) => {
 exports.getCSProducts = async (req, res) => {
   try {
     const products = await ComingSoonProduct.find().sort({ createdAt: -1 });
-    res.status(200).json({ success: true, data: products,count:products.length });
+    res.json({ 
+        success: true, 
+        data: products,
+        count: products.length,
+        message: "All Coming Soon Products retrieved successfully."
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.json({ 
+        success: false, 
+        message: "Failed to retrieve Coming Soon Products: " + error.message
+    });
   }
 };
 
@@ -25,10 +40,28 @@ exports.getCSProductById = async (req, res) => {
   try {
     const product = await ComingSoonProduct.findById(req.params.id);
     if (!product)
-      return res.status(404).json({ success: false, message: "Product not found" });
-    res.status(200).json({ success: true, data: product });
+      return res.json({ 
+          success: false, 
+          message: "Coming Soon Product not found with the provided ID."
+      });
+    res.json({ 
+        success: true, 
+        data: product,
+        message: "Coming Soon Product details fetched successfully."
+    });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    // Handling invalid ID format (CastError)
+    if (error.name === 'CastError') {
+        return res.json({ 
+            success: false, 
+            message: "Invalid format for Coming Soon Product ID."
+        });
+    }
+    // Original general error handling
+    res.json({ 
+        success: false, 
+        message: error.message 
+    });
   }
 };
 
@@ -39,10 +72,27 @@ exports.updateCSProduct = async (req, res) => {
       runValidators: true,
     });
     if (!product)
-      return res.status(404).json({ success: false, message: "Product not found" });
-    res.status(200).json({ success: true, data: product,message:"successfully Updated Poster" });
+      return res.json({ 
+          success: false, 
+          message: "Coming Soon Product not found to update."
+      });
+    res.json({ 
+        success: true, 
+        data: product,
+        message: "Coming Soon Product successfully updated."
+    });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    // Handle specific errors for invalid ID format or validation
+    if (error.name === 'CastError') {
+        return res.json({ 
+            success: false, 
+            message: "Invalid format for Coming Soon Product ID."
+        });
+    }
+    res.json({ 
+        success: false, 
+        message: "Update failed: " + error.message
+    });
   }
 };
 
@@ -51,9 +101,25 @@ exports.deleteCSProduct = async (req, res) => {
   try {
     const product = await ComingSoonProduct.findByIdAndDelete(req.params.id);
     if (!product)
-      return res.status(404).json({ success: false, message: "Product not found" });
-    res.status(200).json({ success: true, message: "Product deleted successfully" });
+      return res.json({ 
+          success: false, 
+          message: "Coming Soon Product not found to delete."
+      });
+    res.json({ 
+        success: true, 
+        message: "Coming Soon Product successfully deleted."
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    // Handle specific error for invalid ID format
+    if (error.name === 'CastError') {
+        return res.json({ 
+            success: false, 
+            message: "Invalid format for Coming Soon Product ID."
+        });
+    }
+    res.json({ 
+        success: false, 
+        message: "Failed to delete Coming Soon Product: " + error.message
+    });
   }
 };

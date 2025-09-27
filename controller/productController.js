@@ -37,14 +37,14 @@ exports.createProduct = async (req, res) => {
 
     const savedProduct = await product.save();
 
-    res.status(201).json({
-      message: "Product created successfully",
+    res.json({
+      message: "Product successfully created and saved.",
       success: true,
       data: savedProduct
     });
   } catch (error) {
-    res.status(400).json({
-      message: error.message,
+    res.json({
+      message: "Failed to create product: " + error.message,
       success: false,
       data: null
     });
@@ -56,16 +56,16 @@ exports.getAllProducts = async (req, res) => {
  
   try {
     const products = await Product.find();
-    res.status(200).json({
-      message: "Products fetched successfully",
+    res.json({
+      message: "All products retrieved successfully.",
       success: true,
       data: products,
       count:products.length
     });
   } catch (error) {
     console.log(error)
-    res.status(500).json({
-      message: error.message,
+    res.json({
+      message: "Failed to retrieve all products: " + error.message,
       success: false,
       data: null
     });
@@ -78,19 +78,27 @@ exports.getProductById = async (req, res) => {
     const { id } = req.params;
     const product = await Product.findById(id);
     if (!product)
-      return res.status(404).json({
-        message: "Product not found",
+      return res.json({
+        message: "Product not found with the provided ID.",
         success: false,
         data: null
       });
-    res.status(200).json({
-      message: "Product fetched successfully",
+    res.json({
+      message: "Product details fetched successfully.",
       success: true,
       data: product
     });
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
+    // Specific check for invalid ID format (CastError)
+    if (error.name === 'CastError') {
+      return res.json({
+        message: "Invalid product ID format or Product not found.",
+        success: false,
+        data: null
+      });
+    }
+    res.json({
+      message: "Failed to fetch product by ID: " + error.message,
       success: false,
       data: null
     });
@@ -103,19 +111,19 @@ exports.getProductsBySubcategory = async (req, res) => {
     const { subCategory } = req.params;
     const products = await Product.find({ subCategory }).populate("category");
     if (!products.length)
-      return res.status(404).json({
-        message: "No products found for this subcategory",
+      return res.json({
+        message: "No products found matching this subcategory.",
         success: false,
         data: []
       });
-    res.status(200).json({
-      message: "Products fetched successfully",
+    res.json({
+      message: "Products for subcategory retrieved successfully.",
       success: true,
       data: products
     });
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
+    res.json({
+      message: "Failed to fetch products by subcategory: " + error.message,
       success: false,
       data: null
     });
@@ -131,8 +139,8 @@ exports.updateProduct = async (req, res) => {
   { $set: req.body },   // use $set to update only the fields in req.body
   { new: true, runValidators: true });
     if (!product)
-      return res.status(404).json({
-        message: "Product not found",
+      return res.json({
+        message: "Product not found to update.",
         success: false,
         data: null
       });
@@ -140,15 +148,24 @@ exports.updateProduct = async (req, res) => {
     // merge updates
     const updatedProduct = await product.save();
 
-    res.status(200).json({
-      message: "Product updated successfully",
+    res.json({
+      message: "Product successfully updated.",
       success: true,
       data: updatedProduct
     });
   } catch (error) {
     console.log(error)
-    res.status(400).json({
-      message: error.message,
+    // Specific check for invalid ID format (CastError)
+    if (error.name === 'CastError') {
+      return res.json({
+        message: "Invalid product ID format.",
+        success: false,
+        data: null
+      });
+    }
+    // General error
+    res.json({
+      message: "Update failed: " + error.message,
       success: false,
       data: null
     });
@@ -161,19 +178,28 @@ exports.deleteProduct = async (req, res) => {
     const { id } = req.params;
     const deletedProduct = await Product.findByIdAndDelete(id);
     if (!deletedProduct)
-      return res.status(404).json({
-        message: "Product not found",
+      return res.json({
+        message: "Product not found to delete.",
         success: false,
         data: null
       });
-    res.status(200).json({
-      message: "Product deleted successfully",
+    res.json({
+      message: "Product successfully deleted.",
       success: true,
       data: deletedProduct
     });
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
+    // Specific check for invalid ID format (CastError)
+    if (error.name === 'CastError') {
+      return res.json({
+        message: "Invalid product ID format or Product not found.",
+        success: false,
+        data: null
+      });
+    }
+    // General error
+    res.json({
+      message: "Failed to delete product: " + error.message,
       success: false,
       data: null
     });
