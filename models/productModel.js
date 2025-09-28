@@ -4,7 +4,7 @@ const mongoose=require('mongoose')
 
 const productSchema = new mongoose.Schema({
   productName: { type: String, required: true }, 
-  stock: { type: Number },     
+  stock: { type: Number ,default:0 },     
   sku: { type: String, unique: true, required: true }, 
   price: {
     current: { type: Number, required: true },
@@ -18,7 +18,7 @@ const productSchema = new mongoose.Schema({
   }, // Reference to Category
   subCategory: { type: String, required: true },       
   brand: { type: String },
-  offer: { type: String },
+  offer: { type: Number,default:0 },
   description: [{ type: String }],         
   features: [{ type: String }],
   additionalInfo: [{ type: String }],      
