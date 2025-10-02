@@ -6,11 +6,9 @@ exports.createProduct = async (req, res) => {
     const {
       productName,
       sku,
-      price,
       category,
       subCategory,
       brand,
-      offer,
       description,
       features,
       additionalInfo,
@@ -19,14 +17,21 @@ exports.createProduct = async (req, res) => {
       variations
     } = req.body;
 
+    // Ensure variations array is provided
+    if (!variations || !variations.length) {
+      return res.json({
+        message: "At least one variation is required.",
+        success: false,
+        data: null
+      });
+    }
+
     const product = new Product({
       productName,
       sku,
-      price,
       category,
       subCategory,
       brand,
-      offer,
       description,
       features,
       additionalInfo,
@@ -53,17 +58,16 @@ exports.createProduct = async (req, res) => {
 
 // GET ALL PRODUCTS
 exports.getAllProducts = async (req, res) => {
- 
   try {
-    const products = await Product.find();
+    const products = await Product.find().sort({ createdAt: -1 });
     res.json({
       message: "All products retrieved successfully.",
       success: true,
       data: products,
-      count:products.length
+      count: products.length
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.json({
       message: "Failed to retrieve all products: " + error.message,
       success: false,
@@ -89,8 +93,7 @@ exports.getProductById = async (req, res) => {
       data: product
     });
   } catch (error) {
-    // Specific check for invalid ID format (CastError)
-    if (error.name === 'CastError') {
+    if (error.name === "CastError") {
       return res.json({
         message: "Invalid product ID format or Product not found.",
         success: false,
@@ -109,7 +112,7 @@ exports.getProductById = async (req, res) => {
 exports.getProductsBySubcategory = async (req, res) => {
   try {
     const { subCategory } = req.params;
-    const products = await Product.find({ subCategory }).populate("category");
+    const products = await Product.find({ subCategory });
     if (!products.length)
       return res.json({
         message: "No products found matching this subcategory.",
@@ -132,12 +135,14 @@ exports.getProductsBySubcategory = async (req, res) => {
 
 // UPDATE PRODUCT
 exports.updateProduct = async (req, res) => {
-  console.log(req.body)
   try {
     const { id } = req.params;
-    const product = await Product.findByIdAndUpdate(id,
-  { $set: req.body },   // use $set to update only the fields in req.body
-  { new: true, runValidators: true });
+    const product = await Product.findByIdAndUpdate(
+      id,
+      { $set: req.body },   // only update fields provided
+      { new: true, runValidators: true }
+    );
+
     if (!product)
       return res.json({
         message: "Product not found to update.",
@@ -145,25 +150,19 @@ exports.updateProduct = async (req, res) => {
         data: null
       });
 
-    // merge updates
-    const updatedProduct = await product.save();
-
     res.json({
       message: "Product successfully updated.",
       success: true,
-      data: updatedProduct
+      data: product
     });
   } catch (error) {
-    console.log(error)
-    // Specific check for invalid ID format (CastError)
-    if (error.name === 'CastError') {
+    if (error.name === "CastError") {
       return res.json({
         message: "Invalid product ID format.",
         success: false,
         data: null
       });
     }
-    // General error
     res.json({
       message: "Update failed: " + error.message,
       success: false,
@@ -189,15 +188,13 @@ exports.deleteProduct = async (req, res) => {
       data: deletedProduct
     });
   } catch (error) {
-    // Specific check for invalid ID format (CastError)
-    if (error.name === 'CastError') {
+    if (error.name === "CastError") {
       return res.json({
         message: "Invalid product ID format or Product not found.",
         success: false,
         data: null
       });
     }
-    // General error
     res.json({
       message: "Failed to delete product: " + error.message,
       success: false,

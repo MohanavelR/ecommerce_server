@@ -1,8 +1,8 @@
-const authModel = require("../../models/authModel");
+const Auth = require("../../models/authModel");
 
 exports.getAllUsers = async (req, res) => {
     try {
-        const users = await authModel.find({email:{$ne:process.env.EXCEPT_EMAIL}}).select("-password"); // hide password
+        const users = await Auth.find({email:{$ne:process.env.EXCEPT_EMAIL}}).select("-password"); // hide password
         res.json({ // res.status(200) removed
             success: true,
             count: users.length,
@@ -22,7 +22,6 @@ exports.updateUserRole = async (req, res) => {
     try {
         const { id } = req.params;
         const { role } = req.body;
-
         if (!['user', 'admin'].includes(role)) {
             return res.json({ // res.status(400) removed
                 success: false, 
@@ -30,7 +29,7 @@ exports.updateUserRole = async (req, res) => {
             });
         }
 
-        const user = await authModel.findByIdAndUpdate(
+        const user = await Auth.findByIdAndUpdate(
             id,
             { role },
             { new: true, runValidators: true }

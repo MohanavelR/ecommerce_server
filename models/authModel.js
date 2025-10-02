@@ -14,7 +14,13 @@ const authSchema = new mongoose.Schema({
          type:String,
          required:true,
           unique: true,
-    },password:{
+    },
+    // phoneNumber:{
+    //     isRequired:true,
+    //     type:String,
+    //     unique:true   
+    // },
+    password:{
         type:String,
         required:true,
         select:false
@@ -64,5 +70,5 @@ authSchema.methods.matchPassword = async function (enteredPassword) {
 //   this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
 //   return token;
 // };
-const authModel=mongoose.model('User',authSchema)
-module.exports=authModel
+const Auth=mongoose.model('User',authSchema)
+module.exports=Auth

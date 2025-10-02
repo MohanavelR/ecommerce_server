@@ -15,6 +15,10 @@ const userRouter=require("./routes/admin/userRoutes")
 const adBannerRouter=require("./routes/admin/adBannerRoutes")
 const csRouter=require("./routes/admin/csRoutes")
 const sliderRouter=require("./routes/admin/sliderRoutes")
+const filterRouter = require('./routes/filterRoutes')
+const searchRouter = require('./routes/searchRoutes')
+const addressRouter = require('./routes/addressRoutes')
+
 setConnection()
 
 const app = express()
@@ -41,6 +45,10 @@ app.use("/api/adbanner",adBannerRouter)
 app.use("/api/comingsoon",csRouter)
 app.use("/api/sliders",sliderRouter)
 app.use("/api/users",userRouter)
+app.use("/api/shop",filterRouter)
+app.use("/api/search",searchRouter)
+app.use("/api/address",addressRouter)
+
 /* Running Server */
 const port=process.env.PORT || 5000
 app.listen(port,()=>{

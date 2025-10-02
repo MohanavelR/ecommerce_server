@@ -15,14 +15,26 @@ const sendOtpforVerification = async (req, res, next) => {
     }
     const otp = String(generateOtp());
     user.verificationToken = otp;
-    user.verificationExpire = Date.now() + 5 * 60 * 1000;
+    user.verificationExpire = Date.now() + 20 * 60 * 1000;
     await user.save();
-    const message = {
-      from: process.env.NODE_EMAIL,
-      to: user.email,
-      subject: "Your OTP for Account Verification",
-      text: `Your OTP for verification your account password is ${otp}. Do not share this code with anyone.`,
-    };
+   const message = {
+  from: process.env.NODE_EMAIL,
+  to: user.email,
+  subject: "EcomShop - Account Verification OTP",
+  text: `Hello ${user.firstName || ''},
+
+Thank you for registering with EcomShop!  
+
+Your One-Time Password (OTP) for account verification is: ${otp}  
+
+⚠️ This OTP is valid for the next 20 minutes. Please do not share it with anyone.  
+
+If you did not sign up for EcomShop, please ignore this email.  
+
+Best regards,  
+The EcomShop Team`,
+};
+
     await transporter.sendMail(message);
     res.json({
       success: true,

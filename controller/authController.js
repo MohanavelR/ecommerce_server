@@ -1,13 +1,37 @@
 const transporter = require("../config/emailSender");
-const authModel = require("../models/authModel");
+const Auth = require("../models/authModel");
 const { generateOtp } = require("../utils/generateOtp");
 const { createToken } = require("../utils/jwt");
+// const createPendingUser=async (req,res)=>{
+//   try {
+//     const { firstName, lastName, email, password ,phoneNumber} = req.body;
+//     const userPhone= await Auth.findOne({phoneNumber})
+//     if (userPhone) {
+//       return res.json({
+//         message: "This Mobile number is already associated with an account. Please try logging in.",
+//         success: false,
+//       });
+//     }
+//     const userEmail=await Auth.findOne({email})
+//     if (userEmail) {
+//       return res.json({
+//         message: "This email is already associated with an account. Please try logging in.",
+//         success: false,
+//       });
+//     }
+    
+
+//   } catch (error) {
+    
+//   }
+// }
+
 
 // ## createUser
 const createUser = async (req, res, next) => {
   try {
     const { firstName, lastName, email, password } = req.body;
-    const user = await authModel.findOne({ email });
+    const user = await Auth.findOne({ email });
     if (user) {
       return res.json({
         // Improved Message
@@ -15,20 +39,32 @@ const createUser = async (req, res, next) => {
         success: false,
       });
     }
-    const newUser = await new authModel({
+    const newUser = await new Auth({
       firstName,
       lastName,
       password,
       email,
     });
     await newUser.save();
+
+
     const message = {
-      from: process.env.NODE_EMAIL,
-      to: newUser.email,
-      subject: "Welcome to EcomShop",
-      text: `This Email created EcomShop Account`,
-    };
-    await transporter.sendMail(message);
+  from: process.env.NODE_EMAIL, // your email
+  to: newUser.email,
+  // Visit us at: https://yourshop.com
+  subject: "Welcome to EcomShop!",
+  text: `Dear ${newUser.firstName},
+
+Welcome to EcomShop! Your account has been successfully created. You can now explore our wide range of products and enjoy a seamless shopping experience.
+
+Thank you for joining EcomShop!
+
+Best regards,
+The EcomShop Team`,
+};
+
+await transporter.sendMail(message);
+
     res
       .status(201)
       .json({ 
@@ -49,7 +85,7 @@ const createUser = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = await authModel.findOne({ email }).select("+password");
+    const user = await Auth.findOne({ email }).select("+password");
     if (!user) {
       return res.json({
         // Improved Message
@@ -125,6 +161,7 @@ const getCurrentUser = async (req, res, next) => {
         email: user?.email,
         role: user?.role,
         isVerified: user?.isVerified,
+        id:user?._id
       },
     });
   } catch (error) {
@@ -140,7 +177,7 @@ const getCurrentUser = async (req, res, next) => {
 const sendOtpforResetPassword = async (req, res, next) => {
   const { email } = req.body;
   try {
-    const user = await authModel.findOne({ email });
+    const user = await Auth.findOne({ email });
     if (!user) {
       return res.json({
         is_success: false,
@@ -150,14 +187,25 @@ const sendOtpforResetPassword = async (req, res, next) => {
     }
     const otp = String(generateOtp());
     user.resetPasswordToken = otp;
-    user.resetPasswordExpire = Date.now() + 5 * 60 * 1000;
+    user.resetPasswordExpire = Date.now() + 20 * 60 * 1000;
     await user.save();
     const message = {
-      from: process.env.NODE_EMAIL,
-      to: user.email,
-      subject: "Your OTP for Password Reset",
-      text: `Your OTP for resetting your account password is ${otp}. Do not share this code with anyone.`,
-    };
+  from: process.env.NODE_EMAIL,
+  to: user.email,
+  subject: "EcomShop - Password Reset OTP",
+  text: `Hello ${user.firstName || ''},
+
+We received a request to reset your EcomShop account password.
+
+Your One-Time Password (OTP) is: ${otp}
+
+⚠️ This OTP is valid for the next 20 minutes. Please do not share it with anyone.
+
+If you did not request this password reset, you can safely ignore this email.
+
+Best regards,  
+The EcomShop Team`,
+};
     await transporter.sendMail(message);
     res.json({
       success: true,
@@ -177,7 +225,7 @@ const sendOtpforResetPassword = async (req, res, next) => {
 const resetPassword = async (req, res, next) => {
   const { email, otp, newpassword } = req.body;
   try {
-    const user = await authModel.findOne({ email });
+    const user = await Auth.findOne({ email });
     if (!user) {
       return res.json({
         is_success: false,

@@ -1,4 +1,4 @@
-const CategoryModel = require("../models/categoryModel");
+const Category = require("../models/categoryModel");
 
 // Create category
 exports.createCategory = async (req, res) => {
@@ -6,7 +6,7 @@ exports.createCategory = async (req, res) => {
   try {
     const { categoryName, subcategories } = req.body;
     
-    const existingCategory = await CategoryModel.findOne({ categoryName });
+    const existingCategory = await Category.findOne({ categoryName });
     if (existingCategory) {
       return res.json({
         message: "A category with this name already exists.",
@@ -15,7 +15,7 @@ exports.createCategory = async (req, res) => {
       });
     }
 
-    const category = new CategoryModel({ categoryName, subcategories });
+    const category = new Category({ categoryName, subcategories });
     const savedCategory = await category.save();
     res.json({
       message: "Category successfully created.",
@@ -35,8 +35,8 @@ exports.createCategory = async (req, res) => {
 // Get all categories
 exports.getAllCategories = async (req, res) => {
   try {
-    const categories = await CategoryModel.find();
-    console.log(categories)
+    const categories = await Category.find();
+     console.log(categories)
     res.json({
       message: "All categories successfully retrieved.",
       success: true,
@@ -56,7 +56,7 @@ exports.getAllCategories = async (req, res) => {
 exports.getCategoryBySubcategory = async (req, res) => {
   try {
     const { subcategory } = req.params;
-    const category = await CategoryModel.findOne({ subcategories: subcategory });
+    const category = await Category.findOne({ subcategories: subcategory });
     if (!category) {
       return res.json({
         message: "Category containing this subcategory was not found.",
@@ -82,7 +82,7 @@ exports.getSubcategoryByCategory = async (req, res) => {
   try {
     const { categoryName } = req.params;
 
-    const category = await CategoryModel.findOne({ categoryName });
+    const category = await Category.findOne({ categoryName });
     console.log(categoryName, category);
 
     if (!category) {
@@ -113,7 +113,7 @@ exports.updateCategory = async (req, res) => {
     const { id } = req.params;
     const { categoryName, subcategories } = req.body;
 
-    const category = await CategoryModel.findById(id);
+    const category = await Category.findById(id);
     if (!category) {
       return res.json({
         message: "Category not found to perform update.",
@@ -162,7 +162,7 @@ exports.updateCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const category = await CategoryModel.findByIdAndDelete(id);
+    const category = await Category.findByIdAndDelete(id);
     if (!category) {
       return res.json({
         message: "Category not found to delete.",
