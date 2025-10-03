@@ -18,7 +18,7 @@ const sliderRouter=require("./routes/admin/sliderRoutes")
 const filterRouter = require('./routes/filterRoutes')
 const searchRouter = require('./routes/searchRoutes')
 const addressRouter = require('./routes/addressRoutes')
-
+const cartRouter = require('./routes/cartRoutes')
 setConnection()
 
 const app = express()
@@ -48,7 +48,7 @@ app.use("/api/users",userRouter)
 app.use("/api/shop",filterRouter)
 app.use("/api/search",searchRouter)
 app.use("/api/address",addressRouter)
-
+app.use("/api/cart",cartRouter)
 /* Running Server */
 const port=process.env.PORT || 5000
 app.listen(port,()=>{

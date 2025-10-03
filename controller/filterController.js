@@ -46,7 +46,7 @@ const getFilterProducts = async(req,res)=>{
 const getProductDetails = async(req,res)=>{
     try {
    const { sku } = req.params;
-     console.log(sku)
+
            const product = await Product.findOne({sku})
            if (!product) {
                return res.status(404).json({

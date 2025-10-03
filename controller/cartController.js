@@ -3,7 +3,7 @@ const Product = require("../models/productModel");
 
 const addToCart = async (req, res) => {
   try {
-    const { userId, productId, quantity, variation } = req.body;
+    const { userId, productId, quantity=1, variation } = req.body;
 
     if (!userId || !productId || !variation || !variation.key || !quantity) {
       return res.status(400).json({
@@ -106,8 +106,9 @@ const addToCart = async (req, res) => {
 
 
 const getCart = async (req, res) => {
+  const { userId } = req.params;
+  console.log(userId)
   try {
-    const { userId } = req.params;
 
     if (!userId) {
       return res.status(400).json({
@@ -119,7 +120,7 @@ const getCart = async (req, res) => {
 
     const cart = await Cart.findOne({ userId }).populate({
       path: "items.productId",
-      select: "productName category subCategory brand images",
+      select: "productName category subCategory brand images _id",
       options: { lean: true },
     });
 
@@ -131,29 +132,13 @@ const getCart = async (req, res) => {
       });
     }
 
-    let grandTotal = 0;
-    const itemsWithTotal = cart.items.map((item) => {
-      const discountedPrice =
-        item.price.current - (item.price.current * (item.offer || 0)) / 100;
-      const subtotal = discountedPrice * item.quantity;
-      grandTotal += subtotal;
 
-      return {
-        ...item.toObject(),
-        productDetails: item.productId,
-        discountedPrice,
-        subtotal,
-      };
-    });
 
     return res.status(200).json({
       success: true,
       message: "Cart fetched successfully",
-      data: {
-        userId: cart.userId,
-        items: itemsWithTotal,
-        grandTotal,
-      },
+      data: cart,
+      count:cart.items.length
     });
   } catch (error) {
     console.error(error);
@@ -165,13 +150,11 @@ const getCart = async (req, res) => {
   }
 };
 
-// controllers/cartController.js
-const Cart = require("../models/cartModel");
 
 // Update Cart Item
 const updateCart = async (req, res) => {
   try {
-    const { userId, variationKey, action, quantity } = req.body;
+    const { userId, variationKey,productId,action, quantity } = req.body;
     // action = "increment" | "decrement" | "set" | "remove"
 
     if (!userId || !variationKey || !action) {
@@ -191,10 +174,9 @@ const updateCart = async (req, res) => {
       });
     }
 
-    const itemIndex = cart.items.findIndex(
-      (item) => item.variationKey === variationKey
-    );
-
+const itemIndex = cart.items.findIndex(
+  (item) => item.productId.toString() === productId && item.variationKey === variationKey
+);
     if (itemIndex === -1) {
       return res.status(404).json({
         success: false,
@@ -264,10 +246,6 @@ const updateCart = async (req, res) => {
   }
 };
 
-// controllers/cartController.js
-const Cart = require("../models/cartModel");
-
-// Delete single item or clear entire cart
 const deleteCartItem = async (req, res) => {
   try {
     const { userId, variationKey, clearAll } = req.body;
@@ -338,5 +316,5 @@ const deleteCartItem = async (req, res) => {
   }
 };
 
-module.exports = { deleteCartItem };
+module.exports = { addToCart, getCart, updateCart, deleteCartItem };
 

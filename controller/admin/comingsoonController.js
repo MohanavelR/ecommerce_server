@@ -21,7 +21,6 @@ exports.createCSProduct = async (req, res) => {
 exports.getCSProducts = async (req, res) => {
   try {
     const products = await ComingSoonProduct.find().sort({ createdAt: -1 });
-    console.log(products)
     res.json({ 
         success: true, 
         data: products,

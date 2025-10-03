@@ -5,17 +5,14 @@ const productSchema = new mongoose.Schema({
   productName: { type: String, required: true }, 
   stock: { type: Number, default: 0 },     
   sku: { type: String, unique: true, required: true }, 
-
   category: { type: String, required: true },       // ✅ plain string
   subCategory: { type: String, required: true },    // ✅ plain string
   brand: { type: String, required: true },  
-
   description: [{ type: String }],         
   features: [{ type: String }],
   additionalInfo: [{ type: String }],      
   images: [{ type: String }],              
   isTrending: { type: Boolean, default: false },  
-
   variations: [
     {
       key :{type:String,required:true,unique:true},

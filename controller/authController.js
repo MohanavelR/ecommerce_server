@@ -118,6 +118,7 @@ const login = async (req, res, next) => {
         email: user?.email,
         role: user?.role,
         isVerified: user?.isVerified,
+        id:user._id
       },
     });
   } catch (error) {
