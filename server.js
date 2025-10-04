@@ -19,6 +19,7 @@ const filterRouter = require('./routes/filterRoutes')
 const searchRouter = require('./routes/searchRoutes')
 const addressRouter = require('./routes/addressRoutes')
 const cartRouter = require('./routes/cartRoutes')
+const orderRouter = require('./routes/orderRoutes')
 setConnection()
 
 const app = express()
@@ -49,6 +50,7 @@ app.use("/api/shop",filterRouter)
 app.use("/api/search",searchRouter)
 app.use("/api/address",addressRouter)
 app.use("/api/cart",cartRouter)
+app.use("/api/order",orderRouter)
 /* Running Server */
 const port=process.env.PORT || 5000
 app.listen(port,()=>{
