@@ -2,7 +2,6 @@ const Category = require("../models/categoryModel");
 
 // Create category
 exports.createCategory = async (req, res) => {
-  console.log("Body:", req.body);
   try {
     const { categoryName, subcategories } = req.body;
     
@@ -14,7 +13,6 @@ exports.createCategory = async (req, res) => {
         data: null
       });
     }
-
     const category = new Category({ categoryName, subcategories });
     const savedCategory = await category.save();
     res.json({
@@ -79,10 +77,9 @@ exports.getCategoryBySubcategory = async (req, res) => {
 
 exports.getSubcategoryByCategory = async (req, res) => {
   try {
-    const { categoryName } = req.params;
+    const { categorySKU } = req.params;
 
-    const category = await Category.findOne({ categoryName });
-    console.log(categoryName, category);
+    const category = await Category.findOne({ categorySKU });
 
     if (!category) {
       return res.json({

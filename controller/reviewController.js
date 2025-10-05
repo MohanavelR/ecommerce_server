@@ -3,6 +3,7 @@ const Order = require("../models/orderModel");
 
 // Add Review (only for purchased products, multiple reviews allowed)
 const addReview = async (req, res) => {
+  console.log("enorifrtg")
   try {
     const { userId, productId, rating, comment } = req.body;
 
@@ -14,7 +15,6 @@ const addReview = async (req, res) => {
       });
     }
 
-    // Check if user has purchased this product
     const order = await Order.findOne({
       userId,
       "cartItems.productId": productId,
@@ -29,9 +29,7 @@ const addReview = async (req, res) => {
       });
     }
 
-    // Create review (multiple reviews allowed)
     const review = await Review.create({ userId, productId, rating, comment });
-
     return res.status(201).json({
       success: true,
       message: "Review added successfully",
@@ -52,13 +50,14 @@ module.exports = { addReview };
 
 // 2️⃣ Get All Reviews for a Product
 const getProductReviews = async (req, res) => {
+  console.log("kjnfveolsrnmv")
   try {
     const { productId } = req.params;
     if (!productId) {
       return res.status(400).json({ success: false, message: "Product ID required", data: null });
     }
 
-    const reviews = await Review.find({ productId }).populate("userId", "name email").sort({ createdAt: -1 });
+    const reviews = await Review.find({ productId }).populate("userId", "firstName email").sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,

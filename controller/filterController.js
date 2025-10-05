@@ -72,7 +72,6 @@ const getProductDetails = async(req,res)=>{
 // 1️⃣ Fetch products by category
 const getProductsByCategory = async (req, res) => {
   const { category } = req.params;
-  console.log(category)
   if (!category) {
     return res.status(400).json({
       success: false,
@@ -99,7 +98,8 @@ const getProductsByCategory = async (req, res) => {
 // 2️⃣ Fetch products by category and subcategory
 const getProductsByCategoryAndSubcategory = async (req, res) => {
   const { category, subCategory } = req.params;
-  console.log(category,subCategory)
+
+
   if (!category || !subCategory) {
     return res.status(400).json({
       success: false,

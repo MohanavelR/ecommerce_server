@@ -20,6 +20,8 @@ const searchRouter = require('./routes/searchRoutes')
 const addressRouter = require('./routes/addressRoutes')
 const cartRouter = require('./routes/cartRoutes')
 const orderRouter = require('./routes/orderRoutes')
+const reviewRouter = require('./routes/reviewRoutes')
+const changeDetailsRouter = require('./routes/changeDetailsRoutes')
 setConnection()
 
 const app = express()
@@ -51,6 +53,8 @@ app.use("/api/search",searchRouter)
 app.use("/api/address",addressRouter)
 app.use("/api/cart",cartRouter)
 app.use("/api/order",orderRouter)
+app.use("/api/review",reviewRouter)
+app.use("/api/details",changeDetailsRouter)
 /* Running Server */
 const port=process.env.PORT || 5000
 app.listen(port,()=>{
