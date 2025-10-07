@@ -228,7 +228,7 @@ const getAllOrders = async (req, res) => {
 const cancelOrder = async (req, res) => {
 
   const { orderId } = req.body;
-  console.log(orderId)
+
   try {
 
     if (!orderId) {

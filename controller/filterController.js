@@ -2,47 +2,56 @@
 const Product = require("../models/productModel")
 const mongoose = require('mongoose')
 
-const getFilterProducts = async(req,res)=>{
-    try {
-        const {category=[],sortBy="price-lower"}=req.query;
-        let filters={}
-        if(category.length){
-            filters.category={$in:category.split(",")}
-        }
-        let sort={}
-        switch(sortBy){
-            case 'price-lower':
-                sort.price=1
-                break
-            case 'price-higher':
-                sort.price=-1
-                break
-            case 'atoz':
-                sort.productName=1
-                break
-            case 'ztoa':
-                sort.productName=-1
-                break
-            default :
-               sort.price=1
-               break    
-        }
-        const products= await Product.find(filters).sort(sort)
-        
-        res.json({
-        count:products.length,
-        success:true,
-        data:products,
-        message:"Product fetched Successfully "
-       }) 
-    } catch (error) {
-       
-       res.json({
-        success:false,
-        message:"An error occurred while processing your request."
-       }) 
+const getFilterProducts = async (req, res) => {
+  try {
+    const { category = "", sortBy = "price-lower" } = req.query;
+
+    let filters = {};
+
+    // 🔹 Filter by category if provided
+    if (category.length) {
+      filters.category = { $in: category.split(",") };
     }
-}
+
+    // 🔹 Define sorting rules
+    let sort = {};
+    switch (sortBy) {
+      case "price-lower":
+        sort["variations.0.price.current"] = 1; 
+        break;
+      case "price-higher":
+        sort["variations.0.price.current"] = -1; 
+      case "atoz":
+        sort.productName = 1;                    
+        break;
+      case "ztoa":
+        sort.productName = -1;                   
+        break;
+      default:
+        sort["variations.0.price.current"] = 1;
+        break;
+    }
+
+    // 🔹 Fetch and sort
+    const products = await Product.find(filters).sort(sort);
+
+    res.json({
+      success: true,
+      count: products.length,
+      data: products,
+      message: "Products fetched successfully"
+    });
+
+  } catch (error) {
+    console.error("Error in getFilterProducts:", error);
+    res.json({
+      success: false,
+      message: "An error occurred while processing your request."
+    });
+  }
+};
+
+
 const getProductDetails = async(req,res)=>{
     try {
    const { sku } = req.params;

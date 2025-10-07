@@ -73,7 +73,7 @@ await transporter.sendMail(message);
         message: "Registration successful! Welcome to EcomShop." 
       });
   } catch (error) {
-    console.log(error);
+  
     res.json({
       message: error.message,
       success: false,
@@ -122,7 +122,7 @@ const login = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.log(error);
+   
     res.json({
       message: error.message,
       success: false,
@@ -139,7 +139,7 @@ const logout = async (req, res, next) => {
       message: "You have been successfully logged out.",
     });
   } catch (error) {
-    console.log(error);
+
     res.json({
       message: error.message,
       success: false,
@@ -166,7 +166,7 @@ const getCurrentUser = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.log(error);
+ 
     res.json({
       message: error.message,
       success: false,
@@ -214,7 +214,7 @@ The EcomShop Team`,
       message: "A password reset OTP has been successfully sent to your email.",
     });
   } catch (error) {
-    console.log(error);
+
     res.json({
       message: error.message,
       success: false,
@@ -265,7 +265,7 @@ const resetPassword = async (req, res, next) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
+
     res.json({
       message: error.message,
       success: false,

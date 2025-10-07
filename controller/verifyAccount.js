@@ -42,7 +42,7 @@ The EcomShop Team`,
       message: "A verification OTP has been successfully sent to your email.",
     });
   } catch (error) {
-    console.log(error);
+    ;
     res.json({
       message: error.message,
       success: false,
@@ -93,7 +93,7 @@ const verifyAccount = async (req, res, next) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
+    ;
     res.json({
       message: error.message,
       success: false,

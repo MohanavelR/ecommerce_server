@@ -3,7 +3,7 @@ const Order = require("../models/orderModel");
 
 // Add Review (only for purchased products, multiple reviews allowed)
 const addReview = async (req, res) => {
-  console.log("enorifrtg")
+
   try {
     const { userId, productId, rating, comment } = req.body;
 
@@ -50,7 +50,7 @@ module.exports = { addReview };
 
 // 2️⃣ Get All Reviews for a Product
 const getProductReviews = async (req, res) => {
-  console.log("kjnfveolsrnmv")
+
   try {
     const { productId } = req.params;
     if (!productId) {

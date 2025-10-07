@@ -2,7 +2,7 @@ const Product = require('../models/productModel')
 const searchProducts = async (req, res) => {
     try {
         const { keyword } = req.params;
-        console.log(keyword)
+ 
         if (!keyword || typeof keyword !== 'string') {
             return res.json({
                 success: false,
@@ -26,7 +26,7 @@ const createSearchQuery = {
     ]
 };
         const searchedProducts = await Product.find(createSearchQuery)
-        // console.log(searchProducts)
+     
         res.json({
             success: true,
             message: "fetching Searching Products",
@@ -34,7 +34,7 @@ const createSearchQuery = {
             count:searchedProducts.length
         })
     } catch (error) {
-        console.log(error)
+        
         res.json({
             success: false,
             message: "Some Error Occurred"

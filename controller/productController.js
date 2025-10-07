@@ -68,7 +68,7 @@ exports.getAllProducts = async (req, res) => {
       count: products.length
     });
   } catch (error) {
-    console.log(error);
+    ;
     res.json({
       message: "Failed to retrieve all products: " + error.message,
       success: false,

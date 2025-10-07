@@ -21,7 +21,7 @@ exports.createCategory = async (req, res) => {
       data: savedCategory
     });
   } catch (error) {
-    console.log(error);
+
     res.json({
       message: "Failed to create category: " + error.message,
       success: false,
@@ -94,7 +94,7 @@ exports.getSubcategoryByCategory = async (req, res) => {
       data: category
     });
   } catch (error) {
-    console.log(error);
+    ;
     res.json({
       message: "Failed to fetch category details: " + error.message,
       success: false,
