@@ -2,7 +2,7 @@ const Auth = require("../../models/authModel");
 
 exports.getAllUsers = async (req, res) => {
     try {
-        const users = await Auth.find({email:{$ne:process.env.EXCEPT_EMAIL}}).select("-password"); // hide password
+        const users = await Auth.find({email:{$ne:process.env.ADMIN_EMAIL}}).select("-password"); // hide password
         res.json({ // res.status(200) removed
             success: true,
             count: users.length,

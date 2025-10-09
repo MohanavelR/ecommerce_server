@@ -30,30 +30,50 @@ const { createToken } = require("../utils/jwt");
 // ## createUser
 const createUser = async (req, res, next) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
-    const user = await Auth.findOne({ email });
-    if (user) {
-      return res.json({
-        // Improved Message
-        message: "This email is already associated with an account. Please try logging in.",
+    const { firstName, lastName, email, password, phoneNumber } = req.body;
+
+    // Basic required fields check
+    if (!firstName || !email || !password || !phoneNumber) {
+      return res.status(400).json({
         success: false,
+        message: "All fields are required",
       });
     }
-    const newUser = await new Auth({
+
+    // Check if email already exists
+    let user = await Auth.findOne({ email });
+    if (user) {
+      return res.json({
+        success: false,
+        message: "This email is already associated with an account. Please try logging in.",
+      });
+    }
+
+    // Check if phone number already exists
+    user = await Auth.findOne({ phoneNumber });
+    if (user) {
+      return res.json({
+        success: false,
+        message: "This mobile number is already associated with an account. Please try logging in.",
+      });
+    }
+
+    // Create new user
+    const newUser = new Auth({
       firstName,
       lastName,
       password,
       email,
+      phoneNumber, // store phone number
     });
     await newUser.save();
 
-
+    // Send welcome email
     const message = {
-  from: process.env.NODE_EMAIL, // your email
-  to: newUser.email,
-  // Visit us at: https://yourshop.com
-  subject: "Welcome to EcomShop!",
-  text: `Dear ${newUser.firstName},
+      from: process.env.NODE_EMAIL,
+      to: newUser.email,
+      subject: "Welcome to EcomShop!",
+      text: `Dear ${newUser.firstName},
 
 Welcome to EcomShop! Your account has been successfully created. You can now explore our wide range of products and enjoy a seamless shopping experience.
 
@@ -61,74 +81,84 @@ Thank you for joining EcomShop!
 
 Best regards,
 The EcomShop Team`,
-};
+    };
+    await transporter.sendMail(message);
 
-await transporter.sendMail(message);
-
-    res
-      .status(201)
-      .json({ 
-        success: true, 
-        // Improved Message
-        message: "Registration successful! Welcome to EcomShop." 
-      });
+    res.status(201).json({
+      success: true,
+      message: "Registration successful! Welcome to EcomShop.",
+    });
   } catch (error) {
-  
-    res.json({
-      message: error.message,
+    res.status(500).json({
       success: false,
+      message: error.message,
     });
   }
 };
-
 // ## login
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    const user = await Auth.findOne({ email }).select("+password");
-    if (!user) {
-      return res.json({
-        // Improved Message
-        message: "Login failed. No account found with this email address.",
+    const { loginId, password } = req.body; 
+
+    if (!loginId || !password) {
+      return res.status(400).json({
         success: false,
+        message: "Please provide email/phone and password",
       });
     }
+
+    // Determine if loginId is an email or phone number
+    const isEmail = /\S+@\S+\.\S+/.test(loginId);
+    const query = isEmail ? { email: loginId } : { phoneNumber: loginId };
+
+    // Find user and select password
+    const user = await Auth.findOne(query).select("+password");
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "Login failed. No account found with this email/phone number.",
+      });
+    }
+
+    // Check password
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       return res.json({
         success: false,
-        // Improved Message
         message: "Login failed. The password you entered is incorrect.",
       });
     }
+
+    // Create JWT token and set cookie
     const token = await createToken(user._id);
     await res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV == "production",
+      secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
     res.json({
       success: true,
-      // Improved Message
       message: "Login successful! You are now logged in.",
       data: {
-        firstName: user?.firstName,
-        lastName: user?.lastName,
-        email: user?.email,
-        role: user?.role,
-        isVerified: user?.isVerified,
-        id:user._id
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        isVerified: user.isVerified,
+        id: user._id,
       },
     });
   } catch (error) {
-   
     res.json({
-      message: error.message,
       success: false,
+      message: error.message,
     });
   }
 };
+
 
 // ## logout
 const logout = async (req, res, next) => {
@@ -162,7 +192,8 @@ const getCurrentUser = async (req, res, next) => {
         email: user?.email,
         role: user?.role,
         isVerified: user?.isVerified,
-        id:user?._id
+        id:user?._id,
+        phoneNumber:user?.phoneNumber
       },
     });
   } catch (error) {
@@ -176,102 +207,126 @@ const getCurrentUser = async (req, res, next) => {
 
 // ## sendOtpforResetPassword
 const sendOtpforResetPassword = async (req, res, next) => {
-  const { email } = req.body;
+  const { resetId } = req.body;
+
+  if (!resetId) {
+    return res.status(400).json({
+      success: false,
+      message: "Email or mobile number is required",
+    });
+  }
+
   try {
-    const user = await Auth.findOne({ email });
+    // Determine if resetId is email or phone
+    const isEmail = /\S+@\S+\.\S+/.test(resetId);
+    const query = isEmail ? { email: resetId } : { phoneNumber: resetId };
+
+    const user = await Auth.findOne(query);
     if (!user) {
       return res.json({
-        is_success: false,
-        // Improved Message
-        message: "Could not find an account registered with this email.",
+        success: false,
+        message: `Could not find an account registered with this ${isEmail ? "email" : "mobile number"}.`,
       });
     }
+
     const otp = String(generateOtp());
     user.resetPasswordToken = otp;
-    user.resetPasswordExpire = Date.now() + 20 * 60 * 1000;
+    user.resetPasswordExpire = Date.now() + 20 * 60 * 1000; // 20 minutes
     await user.save();
-    const message = {
-  from: process.env.NODE_EMAIL,
-  to: user.email,
-  subject: "EcomShop - Password Reset OTP",
-  text: `Hello ${user.firstName || ''},
 
-We received a request to reset your EcomShop account password.
+    if (isEmail) {
+      // Send OTP via email
+      const message = {
+        from: process.env.NODE_EMAIL,
+        to: user.email,
+        subject: "EcomShop - Password Reset OTP",
+        text: `Hello ${user.firstName || ''},
 
-Your One-Time Password (OTP) is: ${otp}
+Your OTP for password reset is: ${otp}
 
-⚠️ This OTP is valid for the next 20 minutes. Please do not share it with anyone.
+This OTP is valid for 20 minutes.
 
-If you did not request this password reset, you can safely ignore this email.
+If you did not request this, please ignore this email.`,
+      };
+      await transporter.sendMail(message);
+    } else {
+      // TODO: send OTP via SMS using your preferred SMS gateway
+    }
 
-Best regards,  
-The EcomShop Team`,
-};
-    await transporter.sendMail(message);
     res.json({
       success: true,
-      // Improved Message
-      message: "A password reset OTP has been successfully sent to your email.",
+      message: `A password reset OTP has been successfully sent to your Email.`,
     });
   } catch (error) {
-
     res.json({
-      message: error.message,
       success: false,
+      message: error.message,
     });
   }
 };
+
 
 // ## resetPassword
 const resetPassword = async (req, res, next) => {
-  const { email, otp, newpassword } = req.body;
+  const { resetId, otp, newpassword } = req.body;
+
+  if (!resetId || !otp || !newpassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Reset ID, OTP, and new password are required",
+    });
+  }
+
   try {
-    const user = await Auth.findOne({ email });
+    const isEmail = /\S+@\S+\.\S+/.test(resetId);
+    const query = isEmail ? { email: resetId } : { phoneNumber: resetId };
+
+    const user = await Auth.findOne(query);
     if (!user) {
       return res.json({
-        is_success: false,
-        // Improved Message
-        message: "User not found for password reset.",
+        success: false,
+        message: `User not found for this ${isEmail ? "email" : "mobile number"}.`,
       });
     }
-    if (user.resetPasswordToken === "") {
+
+    if (!user.resetPasswordToken) {
       return res.json({
         success: false,
-        // Improved Message
         message: "The OTP field is invalid or missing. Please request a new OTP.",
       });
     }
+
     if (user.resetPasswordToken !== otp) {
       return res.json({
         success: false,
-        // Improved Message
         message: "The provided OTP is incorrect. Please try again.",
       });
     }
+
     if (user.resetPasswordExpire < Date.now()) {
       return res.json({
         success: false,
-        // Improved Message
         message: "The OTP has expired. Please request a new password reset link or OTP.",
       });
     }
-    user.password = newpassword;
+
+    user.password = newpassword; // hashed automatically if you use pre-save middleware
     user.resetPasswordToken = "";
     user.resetPasswordExpire = "";
     await user.save();
-    res.json({
-      // Improved Message
-      message: "Your password has been successfully reset. You can now log in.",
-      success: true,
-    });
-  } catch (error) {
 
     res.json({
-      message: error.message,
+      success: true,
+      message: "Your password has been successfully reset. You can now log in.",
+    });
+  } catch (error) {
+    res.json({
       success: false,
+      message: error.message,
     });
   }
 };
+
 
 module.exports = {
   createUser,

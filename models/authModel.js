@@ -15,11 +15,11 @@ const authSchema = new mongoose.Schema({
          required:true,
           unique: true,
     },
-    // phoneNumber:{
-    //     isRequired:true,
-    //     type:String,
-    //     unique:true   
-    // },
+    phoneNumber:{
+        isRequired:true,
+        type:String,
+        unique:true   
+    },
     password:{
         type:String,
         required:true,
