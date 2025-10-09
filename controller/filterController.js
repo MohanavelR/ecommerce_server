@@ -1,10 +1,9 @@
 
 const Product = require("../models/productModel")
 const mongoose = require('mongoose')
-
 const getFilterProducts = async (req, res) => {
   try {
-    const { category = "", sortBy = "price-lower" } = req.query;
+    const { category = "", sortBy = "price-lower", page = 1, limit = 9 } = req.query;
 
     let filters = {};
 
@@ -17,39 +16,52 @@ const getFilterProducts = async (req, res) => {
     let sort = {};
     switch (sortBy) {
       case "price-lower":
-        sort["variations.0.price.current"] = 1; 
+        sort["variations.0.price.current"] = 1;
         break;
       case "price-higher":
-        sort["variations.0.price.current"] = -1; 
+        sort["variations.0.price.current"] = -1;
+        break;
       case "atoz":
-        sort.productName = 1;                    
+        sort.productName = 1;
         break;
       case "ztoa":
-        sort.productName = -1;                   
+        sort.productName = -1;
         break;
       default:
         sort["variations.0.price.current"] = 1;
         break;
     }
 
-    // 🔹 Fetch and sort
-    const products = await Product.find(filters).sort(sort);
+    // 🔹 Pagination setup
+    const skip = (page - 1) * limit;
+    // 🔹 Count total products (before pagination)
+    const totalCount = await Product.countDocuments(filters);
+    // 🔹 Fetch products with filters, sort & pagination
+    const products = await Product.find(filters)
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit));
 
+    // ✅ Response
     res.json({
       success: true,
-      count: products.length,
+      message: "Products retrieved successfully.",
       data: products,
-      message: "Products fetched successfully"
+      currentCount: products.length,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      page: parseInt(page),
     });
 
   } catch (error) {
     console.error("Error in getFilterProducts:", error);
     res.json({
       success: false,
-      message: "An error occurred while processing your request."
+      message: "An error occurred while processing your request.",
     });
   }
 };
+
 
 
 const getProductDetails = async(req,res)=>{

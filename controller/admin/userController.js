@@ -1,21 +1,41 @@
 const Auth = require("../../models/authModel");
 
 exports.getAllUsers = async (req, res) => {
-    try {
-        const users = await Auth.find({email:{$ne:process.env.ADMIN_EMAIL}}).select("-password"); // hide password
-        res.json({ // res.status(200) removed
-            success: true,
-            count: users.length,
-            message: "All users retrieved successfully.", // Added descriptive message
-            data: users
-        });
-    } catch (error) {
-        res.json({ // res.status(500) removed
-            success: false, 
-            message: "Failed to retrieve users: " + error.message // Improved error message
-        });
+  try {
+    const { search } = req.query; // example: /api/users?search=john
+
+    let query = {
+      email: { $ne: process.env.ADMIN_EMAIL } // exclude admin
+    };
+
+    // If a search keyword is provided
+    if (search && search.trim() !== "") {
+      query.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { phoneNumber: { $regex: search, $options: "i" } }
+      ];
     }
+
+    const users = await Auth.find(query).select("-password");
+
+    res.json({
+      success: true,
+      count: users.length,
+      message: search
+        ? `Users matching "${search}" retrieved successfully.`
+        : "All users retrieved successfully.",
+      data: users
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: "Failed to retrieve users: " + error.message
+    });
+  }
 };
+
 
 
 exports.updateUserRole = async (req, res) => {

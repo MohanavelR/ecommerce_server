@@ -59,23 +59,49 @@ exports.createProduct = async (req, res) => {
 // GET ALL PRODUCTS
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    
+    const { keyword } = req.query; // better to use query param: /products?keyword=phone&page=2
+    const page = parseInt(req.query.page) || 1;     
+    const limit = parseInt(req.query.limit) || 9;  
+    const skip = (page - 1) * limit;
+
+    let createSearchQuery = {};
+    if (keyword) {
+      const regEx = new RegExp(keyword, 'i');
+      createSearchQuery = {
+        $or: [
+          { productName: regEx },
+          { description: regEx },
+          { category: regEx },
+          { brand: regEx },
+          { subCategory: regEx }
+        ]
+      };
+    }
+
+    const totalCount = await Product.countDocuments(createSearchQuery);
+    const products = await Product.find(createSearchQuery)
+      .skip(skip)
+      .limit(limit);
+
     res.json({
-      message: "All products retrieved successfully.",
+      message: "Products retrieved successfully.",
       success: true,
       data: products,
-      count: products.length
+      currentCount: products.length,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      page
     });
+
   } catch (error) {
-    ;
     res.json({
-      message: "Failed to retrieve all products: " + error.message,
+      message: "Failed to retrieve products: " + error.message,
       success: false,
       data: null
     });
   }
 };
+
 
 // GET PRODUCT BY ID
 exports.getProductById = async (req, res) => {
