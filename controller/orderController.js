@@ -247,7 +247,7 @@ const cancelOrder = async (req, res) => {
     }
 
     // 🛑 Prevent cancelling after Shipped/Delivered
-    if (["Shipped", "Delivered", "Cancelled"].includes(order.status)) {
+    if (["Shipped", "Delivered", "Cancelled","Processing"].includes(order.status)) {
       return res.status(400).json({
         success: false,
         message: `Order cannot be cancelled when status is '${order.status}'`,
