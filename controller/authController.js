@@ -164,12 +164,13 @@ const login = async (req, res, next) => {
 const logout = async (req, res) => {
   try {
     // Clear cookie with the same settings used when setting it
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      path: "/", // must match the original cookie path
-    });
+  res.clearCookie("token", {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  path: "/",
+  domain: "ecommerce-server-taupe.vercel.app"
+});
 
     // Send response separately (don’t chain after clearCookie)
     return res.status(200).json({

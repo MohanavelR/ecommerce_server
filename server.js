@@ -29,9 +29,9 @@ const app = express()
 /* MiddleWare */
 
 const allowedOrigins = [
+  "https://ecommerce-ui-mocha.vercel.app",
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-  "https://ecommerce-ui-mocha.vercel.app"
 ];
 app.use(cors({
     origin:allowedOrigins,
