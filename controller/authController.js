@@ -160,22 +160,30 @@ const login = async (req, res, next) => {
 };
 
 
-// ## logout
-const logout = async (req, res, next) => {
+const logout = async (req, res) => {
   try {
-    res.clearCookie("token").json({
+    // Clear cookie with the same settings used when setting it
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/", // must match the original cookie path
+    });
+
+    // Send response separately (don’t chain after clearCookie)
+    return res.status(200).json({
       success: true,
-      // Improved Message
       message: "You have been successfully logged out.",
     });
-  } catch (error) {
 
-    res.json({
-      message: error.message,
+  } catch (error) {
+    return res.status(500).json({
       success: false,
+      message: error.message,
     });
   }
 };
+
 
 // ## getCurrentUser
 const getCurrentUser = async (req, res, next) => {
