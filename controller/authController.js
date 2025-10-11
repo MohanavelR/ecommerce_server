@@ -101,7 +101,7 @@ const login = async (req, res, next) => {
     const { loginId, password } = req.body; 
 
     if (!loginId || !password) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         message: "Please provide email/phone and password",
       });
