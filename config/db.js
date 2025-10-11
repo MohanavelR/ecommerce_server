@@ -1,13 +1,9 @@
-const mongoose=require('mongoose')
-const Auth=require("../models/authModel")
+const connectDB = require("./connectDB");
+const Auth = require("../models/authModel");
 
 const setConnection = async () => {
   try {
-    await mongoose.connect(process.env.DATABASE_URL,{
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 30000
-    });
+    await connectDB();
     console.log("Database Connected..");
 
     let user = await Auth.findOne({
@@ -23,13 +19,12 @@ const setConnection = async () => {
         phoneNumber: process.env.ADMIN_PHONE,
         firstName: process.env.ADMIN_NAME,
         password: process.env.ADMIN_PASSWORD,
-        role:"admin"
+        role: "admin"
       });
       await user.save();
       console.log("Admin user created");
-    }
-    else{
-         console.log("Admin Already created");
+    } else {
+      console.log("Admin Already created");
     }
 
   } catch (err) {
@@ -37,6 +32,4 @@ const setConnection = async () => {
   }
 };
 
-
-module.exports= setConnection
-
+module.exports = setConnection;
