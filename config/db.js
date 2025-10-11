@@ -3,7 +3,11 @@ const Auth=require("../models/authModel")
 
 const setConnection = async () => {
   try {
-    await mongoose.connect(process.env.DATABASE_URL);
+    await mongoose.connect(process.env.DATABASE_URL,{
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 30000
+    });
     console.log("Database Connected..");
 
     let user = await Auth.findOne({
