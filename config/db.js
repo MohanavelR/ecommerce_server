@@ -1,16 +1,29 @@
-const connectDB = require("./connectDB");
+const mongoose = require("mongoose");
 const Auth = require("../models/authModel");
 
+let isConnected = false;
+
 const setConnection = async () => {
+  if (isConnected) {
+    console.log("✅ Using existing MongoDB connection");
+    return;
+  }
+
   try {
-    await connectDB();
-    console.log("Database Connected..");
+    const db = await mongoose.connect(process.env.DATABASE_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 30000,
+    });
+
+    isConnected = db.connections[0].readyState;
+    console.log("✅ MongoDB connected successfully");
 
     let user = await Auth.findOne({
       $or: [
         { email: process.env.ADMIN_EMAIL },
-        { phoneNumber: process.env.ADMIN_PHONE }
-      ]
+        { phoneNumber: process.env.ADMIN_PHONE },
+      ],
     });
 
     if (!user) {
@@ -19,16 +32,16 @@ const setConnection = async () => {
         phoneNumber: process.env.ADMIN_PHONE,
         firstName: process.env.ADMIN_NAME,
         password: process.env.ADMIN_PASSWORD,
-        role: "admin"
+        role: "admin",
       });
       await user.save();
-      console.log("Admin user created");
+      console.log("👑 Admin user created");
     } else {
-      console.log("Admin Already created");
+      console.log("👑 Admin already exists");
     }
 
   } catch (err) {
-    console.log("Error Occurred:", err.message);
+    console.error("❌ MongoDB connection error:", err.message);
   }
 };
 
