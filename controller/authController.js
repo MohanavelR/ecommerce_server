@@ -132,12 +132,13 @@ const login = async (req, res, next) => {
     // Create JWT token and set cookie
     const token = await createToken(user._id);
     await res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-       path: "/"
-    });
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  path: "/",
+  domain: ".vercel.app", // <- note the dot, allows subdomains
+  maxAge: 7 * 24 * 60 * 60 * 1000
+});
 
     res.json({
       success: true,
@@ -169,7 +170,7 @@ const logout = async (req, res) => {
   secure: true,
   sameSite: "none",
   path: "/",
-  domain: "ecommerce-server-taupe.vercel.app"
+  domain: ".vercel.app" // <- must match the set cookie
 });
 
     // Send response separately (don’t chain after clearCookie)
