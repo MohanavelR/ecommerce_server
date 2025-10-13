@@ -3,10 +3,10 @@ const Product = require("../models/productModel");
 
 const addToCart = async (req, res) => {
   try {
-    const { userId, productId, quantity=1, variation } = req.body;
+    const { userId, productId, quantity = 1, variation } = req.body;
 
     if (!userId || !productId || !variation || !variation.key || !quantity) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         message: "All fields are required",
         data: null,
@@ -31,17 +31,21 @@ const addToCart = async (req, res) => {
         data: null,
       });
 
-    if (variation.stock < quantity) {
-      return res.status(400).json({
-        success: false,
-        message: `Only ${variation.stock} in stock`,
-        data: null,
-      });
-    }
+    // ✅ Use latest stock from DB variation
+    const availableStock = productVariation.stock;
 
     let cart = await Cart.findOne({ userId });
 
+    // 🧺 If no cart, create a new one
     if (!cart) {
+      if (quantity > availableStock) {
+        return res.status(400).json({
+          success: false,
+          message: `Only ${availableStock} in stock`,
+          data: null,
+        });
+      }
+
       cart = await Cart.create({
         userId,
         items: [
@@ -54,10 +58,11 @@ const addToCart = async (req, res) => {
             price: variation.price,
             offer: variation.offer || 0,
             image: variation.image,
-            stock: variation.stock,
+            stock: availableStock,
           },
         ],
       });
+
       return res.status(201).json({
         success: true,
         message: "Product successfully added to your cart",
@@ -65,6 +70,7 @@ const addToCart = async (req, res) => {
       });
     }
 
+    // 🧠 If cart exists, check if item already present
     const existingItem = cart.items.find(
       (item) =>
         item.productId.toString() === productId &&
@@ -72,8 +78,27 @@ const addToCart = async (req, res) => {
     );
 
     if (existingItem) {
-      existingItem.quantity += quantity;
+      const newTotalQty = existingItem.quantity + quantity;
+
+      // ✅ Check stock before updating
+      if (newTotalQty > availableStock) {
+        return res.status(400).json({
+          success: false,
+          message: `Only ${availableStock} available in stock. You already have ${existingItem.quantity} in cart.`,
+          data: null,
+        });
+      }
+
+      existingItem.quantity = newTotalQty;
     } else {
+      if (quantity > availableStock) {
+        return res.status(400).json({
+          success: false,
+          message: `Only ${availableStock} in stock`,
+          data: null,
+        });
+      }
+
       cart.items.push({
         productId,
         variationKey: variation.key,
@@ -83,7 +108,7 @@ const addToCart = async (req, res) => {
         price: variation.price,
         offer: variation.offer || 0,
         image: variation.image,
-        stock: variation.stock,
+        stock: availableStock,
       });
     }
 
