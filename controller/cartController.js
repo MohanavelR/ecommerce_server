@@ -177,7 +177,7 @@ const getCart = async (req, res) => {
 // Update Cart Item
 const updateCart = async (req, res) => {
   try {
-    const { userId, variationKey,productId,action, quantity } = req.body;
+    const { userId, variationKey, productId, action, quantity } = req.body;
     // action = "increment" | "decrement" | "set" | "remove"
 
     if (!userId || !variationKey || !action) {
@@ -197,9 +197,9 @@ const updateCart = async (req, res) => {
       });
     }
 
-const itemIndex = cart.items.findIndex(
-  (item) => item.productId.toString() === productId && item.variationKey === variationKey
-);
+    const itemIndex = cart.items.findIndex(
+      (item) => item.productId.toString() === productId && item.variationKey === variationKey
+    );
     if (itemIndex === -1) {
       return res.status(404).json({
         success: false,
@@ -210,12 +210,33 @@ const itemIndex = cart.items.findIndex(
 
     const item = cart.items[itemIndex];
 
+    // ✅ Get latest product and variation stock
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+        data: null,
+      });
+    }
+
+    const productVariation = product.variations.find(v => v.key === variationKey);
+    if (!productVariation) {
+      return res.status(404).json({
+        success: false,
+        message: "Product variation not found",
+        data: null,
+      });
+    }
+
+    const availableStock = productVariation.stock;
+
     switch (action) {
       case "increment":
-        if (item.stock <= item.quantity) {
+        if (item.quantity + 1 > availableStock) {
           return res.status(400).json({
             success: false,
-            message: `Cannot add more than available stock (${item.stock})`,
+            message: `Cannot add more than available stock (${availableStock})`,
             data: null,
           });
         }
@@ -230,10 +251,10 @@ const itemIndex = cart.items.findIndex(
         break;
 
       case "set":
-        if (!quantity || quantity < 1 || quantity > item.stock) {
+        if (!quantity || quantity < 1 || quantity > availableStock) {
           return res.status(400).json({
             success: false,
-            message: `Quantity must be between 1 and ${item.stock}`,
+            message: `Quantity must be between 1 and ${availableStock}`,
             data: null,
           });
         }
@@ -268,6 +289,7 @@ const itemIndex = cart.items.findIndex(
     });
   }
 };
+
 
 const deleteCartItem = async (req, res) => {
   try {
