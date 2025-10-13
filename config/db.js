@@ -19,26 +19,26 @@ const setConnection = async () => {
     isConnected = db.connections[0].readyState;
     console.log("✅ MongoDB connected successfully");
 
-    // let user = await Auth.findOne({
-    //   $or: [
-    //     { email: process.env.ADMIN_EMAIL },
-    //     { phoneNumber: process.env.ADMIN_PHONE },
-    //   ],
-    // });
+    let user = await Auth.findOne({
+      $or: [
+        { email: process.env.ADMIN_EMAIL },
+        { phoneNumber: process.env.ADMIN_PHONE },
+      ],
+    });
 
-    // if (!user) {
-    //   user = new Auth({
-    //     email: process.env.ADMIN_EMAIL,
-    //     phoneNumber: process.env.ADMIN_PHONE,
-    //     firstName: process.env.ADMIN_NAME,
-    //     password: process.env.ADMIN_PASSWORD,
-    //     role: "admin",
-    //   });
-    //   await user.save();
-    //   console.log("👑 Admin user created");
-    // } else {
-    //   console.log("👑 Admin already exists");
-    // }
+    if (!user) {
+      user = new Auth({
+        email: process.env.ADMIN_EMAIL,
+        phoneNumber: process.env.ADMIN_PHONE,
+        firstName: process.env.ADMIN_NAME,
+        password: process.env.ADMIN_PASSWORD,
+        role: "admin",
+      });
+      await user.save();
+      console.log("👑 Admin user created");
+    } else {
+      console.log("👑 Admin already exists");
+    }
 
   } catch (err) {
     console.error("❌ MongoDB connection error:", err.message);
