@@ -58,23 +58,26 @@ exports.getGroupedProducts = async (req, res) => {
   }
 };
 
-// ✅ GET Related Products (based on category)
+
 exports.getRelatedProducts = async (req, res) => {
   try {
-    const { category, excludeSku } = req.query; // pass ?category=Dogs&excludeSku=DO-123
+    const { category, excludeSku,page=1,limit=10 } = req.query; // pass ?category=Dogs&excludeSku=DO-123
   
     if (!category)
       return res.status(400).json({ message: "Category is required" });
-
+   const skip = (page - 1) * limit;
     const relatedProducts = await Product.find({
       category,
       sku: { $ne: excludeSku },
-    });
-    // console.log(relatedProducts)
+    }).skip(skip).limit(limit);
+    const totalCount=await Product.countDocuments({category,sku:{$ne:excludeSku}})
     res.status(200).json({
       success: true,
-      count: relatedProducts.length,
-      relatedProducts,
+      currentCount: relatedProducts.length,
+      data:relatedProducts,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      page: parseInt(page)
     });
   } catch (error) {
     console.error("Error fetching related products:", error);

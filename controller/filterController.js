@@ -4,9 +4,7 @@ const mongoose = require('mongoose')
 const getFilterProducts = async (req, res) => {
   try {
     const { category = "", sortBy = "price-lower", page = 1, limit = 9 } = req.query;
-
     let filters = {};
-
     // 🔹 Filter by category if provided
     if (category.length) {
       filters.category = { $in: category.split(",") };
@@ -93,6 +91,8 @@ const getProductDetails = async(req,res)=>{
 // 1️⃣ Fetch products by category
 const getProductsByCategory = async (req, res) => {
   const { category } = req.params;
+  const {page=1,limit=10}=req.query;
+  const skip = (page - 1) * limit;
   if (!category) {
     return res.status(400).json({
       success: false,
@@ -101,11 +101,17 @@ const getProductsByCategory = async (req, res) => {
   }
 
   try {
-    const products = await Product.find({ category });
+    const totalCount=await Product.countDocuments({category})
+    const products = await Product.find({ category }).skip(skip).limit(parseInt(limit));
+
     res.status(200).json({
       success: true,
       message: `Products fetched for category: ${category}`,
-      data: products
+      data: products,
+      currentCount: products.length,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      page: parseInt(page)
     });
   } catch (err) {
     console.error(err);
@@ -116,11 +122,10 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
-// 2️⃣ Fetch products by category and subcategory
 const getProductsByCategoryAndSubcategory = async (req, res) => {
   const { category, subCategory } = req.params;
-
-
+  const {page=1,limit=10}=req.query;
+  const skip = (page - 1) * limit;
   if (!category || !subCategory) {
     return res.status(400).json({
       success: false,
@@ -129,11 +134,17 @@ const getProductsByCategoryAndSubcategory = async (req, res) => {
   }
 
   try {
-    const products = await Product.find({ category, subCategory });
+    
+    const products = await Product.find({ category, subCategory }).skip(skip).limit(limit);
+    const totalCount= await Product.countDocuments({category,subCategory})
     res.status(200).json({
       success: true,
       message: `Products fetched for category: ${category}, subcategory: ${subCategory}`,
-      data: products
+      data: products,
+      currentCount: products.length,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      page: parseInt(page)
     });
   } catch (err) {
     console.error(err);
