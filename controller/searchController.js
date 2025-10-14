@@ -2,7 +2,9 @@ const Product = require('../models/productModel')
 const searchProducts = async (req, res) => {
     try {
         const { keyword } = req.params;
- 
+        
+        const {page=1,limit=12}=req.query;
+
         if (!keyword || typeof keyword !== 'string') {
             return res.json({
                 success: false,
@@ -25,13 +27,19 @@ const createSearchQuery = {
         { subCategory: regEx }
     ]
 };
-        const searchedProducts = await Product.find(createSearchQuery)
-     
+ const skip = (page - 1) * limit;
+const totalCount=await Product.countDocuments(createSearchQuery)
+const searchedProducts = await Product.find(createSearchQuery).skip(skip).limit(limit)
+
         res.json({
             success: true,
             message: "fetching Searching Products",
             data: searchedProducts,
-            count:searchedProducts.length
+            currentCount:searchedProducts.length,
+            page,
+            totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+            page: parseInt(page),
         })
     } catch (error) {
         
