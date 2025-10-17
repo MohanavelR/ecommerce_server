@@ -1,5 +1,13 @@
 const Category = require("../models/categoryModel");
-
+function generateSKU(value) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-") // spaces → dashes
+    .replace(/[\/\\?#&%+,:;@'"\.!\$*\^()\{\}\[\]\|<>=]/g, "-") // remove special chars
+    .replace(/-+/g, "-") // multiple dashes → one
+    .replace(/^-|-$/g, ""); // remove leading/trailing dashes
+}
 // Create category
 exports.createCategory = async (req, res) => {
   try {
@@ -13,7 +21,8 @@ exports.createCategory = async (req, res) => {
         data: null
       });
     }
-    const category = new Category({ categoryName, subcategories });
+    const generate_sku=generateSKU(categoryName)
+    const category = new Category({ categoryName, subcategories,categorySKU:generate_sku });
     const savedCategory = await category.save();
     res.json({
       message: "Category successfully created.",

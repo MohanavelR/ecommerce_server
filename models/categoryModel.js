@@ -34,23 +34,6 @@ const categorySchema = new mongoose.Schema(
   { timestamps: true } // adds category createdAt & updatedAt
 );
 
-categorySchema.pre("save", function (next) {
-
-  if (this.isModified("categoryName") || !this.categorySKU) {
-    this.categorySKU = generateSKU(this.categoryName);
-  }
-
-
-  if (this.subcategories && this.subcategories.length > 0) {
-    this.subcategories = this.subcategories.map((sub) => ({
-      name: sub.name,
-      sku: sub.sku || generateSKU(sub.name),
-      createdAt: sub.createdAt || new Date(),
-    }));
-  }
-
-  next();
-});
 
 const Category = mongoose.model("Category", categorySchema);
 module.exports = Category;
